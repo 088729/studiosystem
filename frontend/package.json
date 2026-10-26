@@ -1,0 +1,40 @@
+{
+  "name": "studiosystemfrontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.9",
+    "buffer": "^6.0.3",
+    "dayjs": "^1.11.13",
+    "dompurify": "^3.4.14",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.9.0",
+    "events": "^3.3.0",
+    "jszip": "^3.10.1",
+    "katex": "^0.17.0",
+    "lucide-vue-next": "^1.0.0",
+    "lunar-javascript": "^1.7.7",
+    "pinia": "^2.3.0",
+    "quill": "^2.0.3",
+    "simple-mind-map": "file:../packages/simple-mind-map",
+    "simple-mind-map-plugin-themes": "^1.0.1",
+    "stream-browserify": "^3.0.0",
+    "vditor": "^3.10.9",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "vuedraggable": "^4.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.5",
+    "vitest": "^4.1.9"
+  }
+}

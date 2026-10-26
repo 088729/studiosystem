@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studiosystem-backend
+  namespace: studio
+  labels:
+    app: studiosystem-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: studiosystem-backend
+  template:
+    metadata:
+      labels:
+        app: studiosystem-backend
+    spec:
+      containers:
+        - name: studiosystem-backend
+          image: ghcr.io/your-org/studiosystem-backend:latest  # 替换为你的镜像仓库
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://mongodb:27017/studio_system"  # 替换为你的 MongoDB 地址
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: studiosystem-secret
+                  key: SECRET_KEY
+            - name: STORAGE_BACKEND
+              value: "local"
+            - name: STORAGE_DIR
+              value: "/app/data/uploads"  # 建议挂载 PVC 持久化（emptyDir 会在重启后丢失）
+            - name: CORS_ORIGINS
+              value: "https://your-domain.com"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"

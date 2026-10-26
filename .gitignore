@@ -1,0 +1,27 @@
+# ===== 依赖与构建产物 =====
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# ===== 环境与密钥（严禁提交） =====
+.env
+.env.local
+.env.*.local
+backend/deploy/secret.yaml
+frontend/deploy/secret.yaml
+
+# ===== 数据与日志 =====
+backend/data/
+backend/logs/
+backend/server*.log
+*.log
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

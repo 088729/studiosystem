@@ -1,0 +1,26 @@
+# 环境与密钥
+.env
+.env.local
+.env.*.local
+deploy/secret.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+
+# 日志
+logs/
+*.log
+
+# UI 测试产物
+.uitest/
+
+# IDE
+.idea/
+.vscode/
+
+# Wiki 文档仓库根目录（Git 仓库本体，不入库）
+data/
