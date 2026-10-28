@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio System 使用文档 · 部署与使用指南</title>
+<style>
+  :root {
+    --primary: #4f6ef7;
+    --primary-light: #eef1fe;
+    --text: #1f2937;
+    --text-2: #4b5563;
+    --muted: #9ca3af;
+    --border: #e6e9f0;
+    --bg: #f6f7fb;
+    --code-bg: #0f172a;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+
+  /* ===== 布局：左侧目录 + 右侧内容 ===== */
+  .layout { display: flex; max-width: 1280px; margin: 0 auto; gap: 32px; padding: 24px; }
+  nav.toc {
+    position: sticky;
+    top: 24px;
+    align-self: flex-start;
+    width: 230px;
+    flex-shrink: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 10px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+  nav.toc .toc-title {
+    font-size: 12px; font-weight: 700; color: var(--muted);
+    letter-spacing: 2px; padding: 0 12px 10px;
+  }
+  nav.toc a {
+    display: block;
+    padding: 7px 12px;
+    border-radius: 8px;
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+  }
+  nav.toc a:hover { background: var(--primary-light); color: var(--primary); }
+  nav.toc a.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+    border-left-color: var(--primary);
+  }
+  nav.toc a.sub { padding-left: 26px; font-size: 13px; }
+  main { flex: 1; min-width: 0; max-width: 940px; }
+
+  /* ===== 头部 hero ===== */
+  .hero {
+    background: linear-gradient(135deg, #4f6ef7 0%, #6d8bff 60%, #8aa5ff 100%);
+    border-radius: 18px;
+    color: #fff;
+    padding: 44px 44px 38px;
+    margin-bottom: 28px;
+  }
+  .hero .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .hero .logo .mark {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,.2); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800;
+  }
+  .hero .logo span { font-size: 20px; font-weight: 700; }
+  .hero h1 { font-size: 30px; line-height: 1.35; margin-bottom: 10px; }
+  .hero p.sub { opacity: .92; font-size: 15.5px; margin-bottom: 22px; }
+  .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero .tags span {
+    font-size: 12.5px; padding: 5px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+  }
+
+  /* ===== 区块 ===== */
+  section.card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 34px 38px;
+    margin-bottom: 26px;
+  }
+  section.card > h2 {
+    font-size: 21px; font-weight: 700; margin-bottom: 18px;
+    padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  section.card > h2::before {
+    content: ""; width: 5px; height: 22px; border-radius: 3px; background: var(--primary);
+  }
+  section.card h3 { font-size: 16.5px; margin: 26px 0 12px; }
+  section.card h3:first-of-type { margin-top: 6px; }
+  section.card p { margin-bottom: 12px; color: var(--text-2); }
+  section.card li { color: var(--text-2); margin-bottom: 6px; }
+  section.card strong { color: var(--text); }
+  section.card ul, section.card ol { padding-left: 22px; margin-bottom: 14px; }
+
+  /* ===== 表格 ===== */
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 18px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 9px 14px; text-align: left; }
+  th { background: #f9fafc; font-weight: 600; color: var(--text); white-space: nowrap; }
+  td code, li code, p code {
+    background: var(--primary-light); color: #3b55d9;
+    padding: 2px 7px; border-radius: 5px; font-size: 12.5px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+  }
+
+  /* ===== 代码块 ===== */
+  pre {
+    background: var(--code-bg); color: #e2e8f0;
+    border-radius: 10px; padding: 16px 20px; overflow-x: auto;
+    font-size: 13px; line-height: 1.7; margin: 12px 0 18px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+  }
+  pre .c { color: #7d8db1; }      /* 注释 */
+  pre .p { color: #93c5fd; }      /* 提示符 */
+  pre .k { color: #fbbf24; }      /* 关键值 */
+
+  /* ===== 截图 ===== */
+  figure.shot { margin: 18px 0 24px; }
+  figure.shot img {
+    width: 100%; border-radius: 10px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 18px rgba(16, 24, 40, .08);
+  }
+  figure.shot figcaption {
+    text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 8px;
+  }
+
+  /* ===== 特性卡片 ===== */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0 8px; }
+  .feature {
+    border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px;
+    background: #fcfcfe;
+  }
+  .feature .f-icon {
+    width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light);
+    color: var(--primary); display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin-bottom: 10px;
+  }
+  .feature h4 { font-size: 15px; margin-bottom: 6px; }
+  .feature p { font-size: 13px; color: var(--text-2); margin: 0; }
+
+  /* ===== 提示框 ===== */
+  .note {
+    border-left: 4px solid var(--primary);
+    background: var(--primary-light);
+    border-radius: 0 10px 10px 0;
+    padding: 13px 18px; font-size: 13.5px; color: var(--text-2);
+    margin: 14px 0 18px;
+  }
+  .note.warn { border-left-color: #f59e0b; background: #fffbeb; }
+  .note b { color: var(--text); }
+
+  /* ===== 步骤 ===== */
+  .steps { counter-reset: step; margin: 16px 0; }
+  .steps .step {
+    position: relative; padding-left: 44px; padding-bottom: 20px;
+    border-left: 2px dashed var(--border); margin-left: 15px;
+  }
+  .steps .step:last-child { border-left-color: transparent; padding-bottom: 4px; }
+  .steps .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: -16px; top: 0;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--primary); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+  }
+  .steps .step h4 { font-size: 14.5px; margin-bottom: 8px; padding-top: 4px; }
+
+  /* ===== 目录树 ===== */
+  pre.tree { line-height: 1.9; }
+
+  /* ===== 回到顶部 ===== */
+  #backTop {
+    position: fixed; right: 28px; bottom: 32px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--primary); color: #fff; border: none;
+    font-size: 18px; cursor: pointer; opacity: 0; pointer-events: none;
+    transition: opacity .25s; box-shadow: 0 6px 18px rgba(79,110,247,.4);
+    z-index: 50;
+  }
+  #backTop.show { opacity: 1; pointer-events: auto; }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 10px 0 40px; }
+
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; padding: 14px; }
+    nav.toc { position: static; width: 100%; max-height: none; }
+    .feature-grid { grid-template-columns: 1fr; }
+    section.card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ================= 侧栏目录 ================= -->
+  <nav class="toc" id="toc">
+    <div class="toc-title">目 录</div>
+    <a href="#intro">1. 项目简介</a>
+    <a href="#features">2. 功能总览</a>
+    <a href="#requirements">3. 环境要求</a>
+    <a href="#quickstart">4. 快速开始（本地开发）</a>
+    <a href="#deploy">5. 生产部署</a>
+    <a class="sub" href="#deploy-backend">5.1 后端</a>
+    <a class="sub" href="#deploy-frontend">5.2 前端</a>
+    <a class="sub" href="#deploy-k8s">5.3 Kubernetes</a>
+    <a class="sub" href="#deploy-env">5.4 环境变量</a>
+    <a class="sub" href="#file-storage">5.5 文件存储配置</a>
+    <a href="#case">6. 用例管理</a>
+    <a class="sub" href="#case-library">6.1 用例库管理</a>
+    <a class="sub" href="#case-io">6.2 导入与导出</a>
+    <a href="#editor">7. 导图编辑器与大纲</a>
+    <a class="sub" href="#editor-layout">7.1 编辑器布局与工具栏</a>
+    <a class="sub" href="#editor-panels">7.2 左侧功能面板</a>
+    <a class="sub" href="#editor-version">7.3 版本与协作</a>
+    <a class="sub" href="#editor-outline">7.4 层级文本大纲</a>
+    <a href="#task">8. 任务管理</a>
+    <a class="sub" href="#task-sidebar">8.1 侧栏与清单管理</a>
+    <a class="sub" href="#task-list-view">8.2 列表视图与详情抽屉</a>
+    <a class="sub" href="#task-quickadd">8.3 快速添加语法</a>
+    <a class="sub" href="#task-sort">8.4 排序与分组</a>
+    <a class="sub" href="#task-board">8.5 看板视图</a>
+    <a class="sub" href="#task-calendar">8.6 日历与时间线</a>
+    <a class="sub" href="#task-quadrant">8.7 四象限</a>
+    <a class="sub" href="#task-summary">8.8 统计与摘要</a>
+    <a class="sub" href="#task-focus">8.9 番茄专注与习惯打卡</a>
+    <a class="sub" href="#task-batch">8.10 批量操作与回收站</a>
+    <a href="#wiki">9. 知识库 Wiki</a>
+    <a href="#admin">10. 后台管理与权限</a>
+    <a href="#structure">11. 目录结构</a>
+    <a href="#faq">12. 常见问题</a>
+    <a href="#opensource">13. 开源说明</a>
+  </nav>
+
+  <!-- ================= 主内容 ================= -->
+  <main>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="logo"><div class="mark">S</div><span>Studio System</span></div>
+      <h1>一站式创作与工作台<br>部署与使用文档</h1>
+      <p class="sub">用例导图 · 任务管理 · 知识库 · 专注与习惯 —— 面向小团队的工作室级协作平台</p>
+      <div class="tags">
+        <span>Vue 3 + Vite</span><span>Element Plus</span><span>FastAPI</span>
+        <span>MongoDB</span><span>simple-mind-map</span><span>Git 版本库</span><span>RBAC 权限</span>
+      </div>
+    </div>
+
+    <!-- 1. 项目简介 -->
+    <section class="card" id="intro">
+      <h2>项目简介</h2>
+      <p><strong>Studio System</strong> 是一个面向创作团队 / 测试团队的一站式工作台，把<strong>用例导图、任务管理、Wiki 知识库、番茄专注与习惯打卡</strong>整合在一个系统里，开箱即用：</p>
+      <ul>
+        <li><strong>用例管理</strong>：以思维导图组织测试用例或需求拆解，支持在线编辑、版本快照与回滚、XMind / Markdown 导入导出；</li>
+        <li><strong>任务管理</strong>：对齐主流待办应用交互的任务系统——今天 / 最近 7 天 / 收集箱等智能清单，列表 / 看板 / 日历 / 时间线 / 四象限 / 统计多视图，番茄专注与习惯打卡；</li>
+        <li><strong>知识库 Wiki</strong>：基于 Git 的在线 Obsidian——每个文档库是一个 Git 仓库，支持 <code>[[双链]]</code>、关系图谱、全文搜索、行级 diff 版本回滚；</li>
+        <li><strong>平台管理</strong>：用户 / 角色 / 权限（RBAC + ACL）后台，细粒度到每个模块的查看 / 编辑 / 删除 / 管理权限。</li>
+      </ul>
+      <p>前后端分离：前端 Vue 3 SPA，后端 FastAPI + MongoDB，一个可私有化部署的完整系统。</p>
+    </section>
+
+    <!-- 2. 功能总览 -->
+    <section class="card" id="features">
+      <h2>功能总览</h2>
+      <div class="feature-grid">
+        <div class="feature"><div class="f-icon">🧠</div><h4>用例导图</h4><p>思维导图式用例管理，节点图标标记优先级，版本快照、回滚、XMind 互导、层级文本大纲视图。</p></div>
+        <div class="feature"><div class="f-icon">✅</div><h4>任务管理</h4><p>清单 / 看板 / 日历 / 时间线 / 四象限 / 统计，智能清单聚合，快速添加语法，子任务与附件。</p></div>
+        <div class="feature"><div class="f-icon">🍅</div><h4>专注与习惯</h4><p>番茄钟 / 正计时 / 沉浸模式，专注统计报表，每日习惯打卡与连续记录。</p></div>
+        <div class="feature"><div class="f-icon">📚</div><h4>Wiki 知识库</h4><p>Git 驱动的文档库：Markdown 所见即所得编辑、双链、反链、关系图谱、提交历史与回滚。</p></div>
+        <div class="feature"><div class="f-icon">👥</div><h4>平台管理</h4><p>用户 / 角色 / 权限三员管理，RBAC + ACL 细粒度授权，支持清单级共享协作。</p></div>
+        <div class="feature"><div class="f-icon">🔐</div><h4>私有化部署</h4><p>前后端容器化交付，K8s 清单开箱可用，数据全部落在自己的 MongoDB 与 Git 仓库。</p></div>
+      </div>
+    </section>
+
+    <!-- 3. 环境要求 -->
+    <section class="card" id="requirements">
+      <h2>环境要求</h2>
+      <table>
+        <tr><th>组件</th><th>版本要求</th><th>说明</th></tr>
+        <tr><td>Node.js</td><td>≥ 18（镜像使用 20）</td><td>前端构建与本地开发</td></tr>
+        <tr><td>Python</td><td>≥ 3.11（镜像使用 3.13）</td><td>后端运行时</td></tr>
+        <tr><td>MongoDB</td><td>≥ 6.0</td><td>唯一业务数据库</td></tr>
+        <tr><td>Git</td><td>任意近期版本</td><td>Wiki 模块依赖（GitPython 调用 git 可执行文件）</td></tr>
+        <tr><td>文件存储</td><td>内置本地磁盘（默认）</td><td>图片 / 附件开箱即用；<code>STORAGE_BACKEND=s3</code> 直连阿里云 OSS / 腾讯云 COS / 七牛 / MinIO 等 S3 兼容云，或对接自有文件服务</td></tr>
+      </table>
+      <div class="note"><b>提示：</b>包管理推荐使用 <code>uv</code>（后端）与 <code>npm</code>（前端）；Windows 下后端提供 <code>start.bat</code> 一键启动脚本。</div>
+    </section>
+
+    <!-- 4. 快速开始 -->
+    <section class="card" id="quickstart">
+      <h2>快速开始（本地开发）</h2>
+
+      <h3>4.1 启动后端</h3>
+      <div class="steps">
+        <div class="step">
+          <h4>安装依赖</h4>
+          <pre><span class="c"># 在 backend 目录下</span>
+<span class="p">$</span> uv venv
+<span class="p">$</span> uv pip install -e <span class="k">".[dev]"</span></pre>
+        </div>
+        <div class="step">
+          <h4>配置环境变量</h4>
+          <p>复制 <code>.env.example</code> 为 <code>.env</code>，按需修改 MongoDB 地址与密钥：</p>
+          <pre><span class="c"># backend/.env</span>
+MONGODB_URI=mongodb://localhost:27017/studio_system
+SECRET_KEY=<span class="k">change-me-in-production</span>
+STORAGE_BACKEND=local                              <span class="c"># 文件存储：local（默认）| s3（S3 兼容云）| resourceplatform</span>
+STORAGE_DIR=./data/uploads                         <span class="c"># local 模式的存储目录</span>
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173</pre>
+          <p>文件 / 图片默认存本地磁盘（<code>STORAGE_DIR</code>），经后端 <code>/uploads</code> 静态访问，零外部依赖；要对接已有文件服务（如自建 ResourcePlatform），设 <code>STORAGE_BACKEND=resourceplatform</code> 并填写 <code>RESOURCEPLATFORM_BASE_URL / RESOURCEPLATFORM_TOKEN</code>。</p>
+        </div>
+        <div class="step">
+          <h4>启动服务</h4>
+          <pre><span class="c"># 方式一：Windows 双击 start.bat</span>
+<span class="c"># 方式二：命令行（端口 8302，与前端代理一致）</span>
+<span class="p">$</span> .venv/Scripts/uvicorn app.main:app --reload --port 8302</pre>
+          <p>首次启动会自动初始化默认账号与权限数据。</p>
+        </div>
+      </div>
+
+      <h3>4.2 启动前端</h3>
+      <pre><span class="c"># 在 frontend 目录下</span>
+<span class="p">$</span> npm ci --prefix ../packages/simple-mind-map --omit=dev   <span class="c"># 导图内核依赖（仅首次）</span>
+<span class="p">$</span> npm ci
+<span class="p">$</span> npm run dev        <span class="c"># http://localhost:5173</span></pre>
+
+      <div class="note">
+        <b>simple-mind-map 定制版。</b>导图内核是 <code>packages/simple-mind-map/</code>（fork 自
+        <a href="https://github.com/wanglin2/mind-map">wanglin2/mind-map</a>，含功能定制），前端以
+        <code>file:</code> 依赖引用；它有独立的依赖清单，因此首次安装需先在其目录执行一次 <code>npm ci</code>。
+        升级上游或修改内核后，替换 <code>packages/simple-mind-map/src</code> 并重新安装即可。
+      </div>
+
+      <h3>4.3 登录系统</h3>
+      <p>浏览器访问 <code>http://localhost:5173</code>，使用默认管理员账号登录：</p>
+      <table>
+        <tr><th>用户名</th><th>密码</th></tr>
+        <tr><td><code>admin</code></td><td><code>admin123</code></td></tr>
+      </table>
+      <div class="note warn"><b>安全提示：</b>默认密码仅用于首次登录。可通过环境变量 <code>ADMIN_INITIAL_PASSWORD</code> 自定义初始密码；生产环境务必在首次启动前设置，并尽快修改默认密码。</div>
+      <figure class="shot">
+        <img src="screenshots/login.png" loading="lazy" alt="登录页">
+        <figcaption>系统登录页</figcaption>
+      </figure>
+    </section>
+
+    <!-- 5. 生产部署 -->
+    <section class="card" id="deploy">
+      <h2>生产部署</h2>
+      <p>推荐容器化部署：后端与前端各自构建镜像，K8s 编排（仓库内含可直接使用的清单），MongoDB 与 ResourcePlatform 建议独立部署。</p>
+
+      <h3 id="deploy-backend">5.1 后端镜像</h3>
+      <pre><span class="c"># 在 backend 目录下构建；内网基础镜像可通过 --build-arg 替换</span>
+<span class="p">$</span> docker build -t studiosystem-backend:latest \
+    --build-arg BASE_IMAGE=python:3.13-slim .</pre>
+      <p>镜像内已安装 git（Wiki 模块依赖），健康检查端点为 <code>/health</code>，容器监听 <code>8000</code> 端口。</p>
+
+      <h3 id="deploy-frontend">5.2 前端镜像</h3>
+      <p>前端 Dockerfile 的构建上下文必须是<strong>工作区根目录</strong>（因 simple-mind-map 本地依赖在仓库外）：</p>
+      <pre><span class="c"># 在与 mind-map/ 、studiosystem/ 同级的目录执行</span>
+<span class="p">$</span> docker build -f studiosystem/frontend/Dockerfile \
+    --build-arg BASE_IMAGE=node:20-alpine \
+    -t studiosystem-frontend:latest .</pre>
+      <p>构建参数（可在 Dockerfile 中按需调整）：</p>
+      <table>
+        <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+        <tr><td><code>--base</code></td><td><code>/studio/</code></td><td>前端部署子路径</td></tr>
+        <tr><td><code>VITE_RP_BASE_URL</code></td><td>资源平台地址</td><td>附件 / 图片的访问基地址</td></tr>
+      </table>
+      <p>前端镜像基于 nginx:alpine，内置 SPA 回退与 <code>/api/</code> 反代兜底；主链路建议由 Ingress 将 <code>/api</code> 转发到后端服务。</p>
+
+      <h3 id="deploy-k8s">5.3 Kubernetes 编排</h3>
+      <pre>backend/deploy/deployment.yaml   <span class="c"># Deployment（含资源限制与健康检查）</span>
+backend/deploy/secret.yaml.example   <span class="c"># 复制为 secret.yaml 后填入密钥</span></pre>
+      <pre><span class="p">$</span> kubectl apply -f backend/deploy/secret.yaml
+<span class="p">$</span> kubectl apply -f backend/deploy/deployment.yaml</pre>
+      <p>镜像仓库地址、命名空间可在 <code>Makefile</code> 与清单中按实际环境替换。</p>
+
+      <h3 id="deploy-env">5.4 环境变量一览</h3>
+      <table>
+        <tr><th>变量</th><th>必填</th><th>说明</th></tr>
+        <tr><td><code>MONGODB_URI</code></td><td>是</td><td>MongoDB 连接串，如 <code>mongodb://host:27017/studio_system</code></td></tr>
+        <tr><td><code>SECRET_KEY</code></td><td>是</td><td>JWT 签名密钥，生产环境必须更换</td></tr>
+        <tr><td><code>ACCESS_TOKEN_EXPIRE_MINUTES</code></td><td>否</td><td>Token 有效期（分钟），默认 120</td></tr>
+        <tr><td><code>CORS_ORIGINS</code></td><td>否</td><td>允许的跨域来源，逗号分隔</td></tr>
+        <tr><td><code>STORAGE_BACKEND</code></td><td>否</td><td>文件存储后端：<code>local</code>（默认，本地磁盘）/ <code>s3</code>（S3 兼容云）/ <code>resourceplatform</code>（自有文件服务），配置示例见 <a href="#file-storage">5.5</a></td></tr>
+        <tr><td><code>STORAGE_S3_ENDPOINT_URL</code> 等</td><td>否</td><td><code>STORAGE_BACKEND=s3</code> 时的 S3 兼容配置：端点 / AK / SK / 桶 / 寻址风格 / 公共域名（各云预设见 <code>backend/.env.example</code>）</td></tr>
+        <tr><td><code>STORAGE_DIR</code></td><td>否</td><td>local 后端的存储目录（默认 <code>./data/uploads</code>），生产环境指向持久化卷</td></tr>
+        <tr><td><code>RESOURCEPLATFORM_BASE_URL</code></td><td>否</td><td>resourceplatform 后端的服务地址</td></tr>
+        <tr><td><code>RESOURCEPLATFORM_TOKEN</code></td><td>否</td><td>resourceplatform 后端的访问令牌</td></tr>
+        <tr><td><code>ADMIN_INITIAL_PASSWORD</code></td><td>否</td><td>首次启动时 admin 用户的初始密码</td></tr>
+      </table>
+
+      <h3 id="file-storage">5.5 文件存储配置</h3>
+      <p>三种后端按 <code>STORAGE_BACKEND</code> 切换，写入 <code>backend/.env</code> 即可，业务功能完全一致：</p>
+
+      <p><strong>① local —— 本地磁盘（默认，推荐开源 / 单机部署）</strong></p>
+      <pre>STORAGE_BACKEND=local
+STORAGE_DIR=./data/uploads     <span class="c"># 生产环境指向持久化卷</span></pre>
+
+      <p><strong>② s3 —— S3 兼容对象存储（阿里云 OSS / 腾讯云 COS / 七牛 / 华为 OBS / MinIO / R2 / AWS S3）</strong></p>
+      <pre><span class="c"># —— 阿里云 OSS 示例（先在控制台建桶，直链模式建议桶设为公共读）——</span>
+STORAGE_BACKEND=s3
+STORAGE_S3_ENDPOINT_URL=https://oss-cn-hangzhou.aliyuncs.com
+STORAGE_S3_ACCESS_KEY=你的AccessKey
+STORAGE_S3_SECRET_KEY=你的SecretKey
+STORAGE_S3_BUCKET=桶名
+STORAGE_S3_REGION=cn-hangzhou
+STORAGE_S3_ADDRESSING=virtual
+STORAGE_S3_PUBLIC_BASE=https://桶名.oss-cn-hangzhou.aliyuncs.com   <span class="c"># 直链域名 / CDN；留空则 7 天预签名</span>
+
+<span class="c"># —— 腾讯云 COS：仅替换端点与公共域名 ——</span>
+<span class="c"># STORAGE_S3_ENDPOINT_URL=https://cos.ap-shanghai.myqcloud.com</span>
+<span class="c"># STORAGE_S3_PUBLIC_BASE=https://桶名.cos.ap-shanghai.myqcloud.com</span>
+
+<span class="c"># —— MinIO（NAS 自建）：寻址用 path，公共域名留空走预签名 ——</span>
+<span class="c"># STORAGE_S3_ENDPOINT_URL=http://你的NAS:9000</span>
+<span class="c"># STORAGE_S3_ADDRESSING=path</span></pre>
+      <p>其它云的端点预设（七牛 / 华为 OBS / AWS S3）见 <code>backend/.env.example</code>。</p>
+
+      <p><strong>③ resourceplatform —— 自建文件服务（已有部署沿用）</strong></p>
+      <pre>STORAGE_BACKEND=resourceplatform
+RESOURCEPLATFORM_BASE_URL=https://你的域名/resourceplatform
+RESOURCEPLATFORM_TOKEN=你的令牌</pre>
+
+      <div class="note warn"><b>注意：</b>切换后端不迁移存量文件——旧文件继续从原位置访问，新文件写入新后端。s3 模式的桶需提前创建；直链模式建议桶设公共读，否则内嵌到评论等长生命周期内容的图片（预签名 7 天）会过期。</div>
+    </section>
+
+    <!-- 6. 用例管理 -->
+    <section class="card" id="case">
+      <h2>用例管理</h2>
+      <p>用例库以「文件夹（最多三层）+ 导图」两级组织测试用例与需求拆解。左侧为用例树，右侧为选中导图的详情与只读预览。</p>
+      <figure class="shot">
+        <img src="screenshots/case-manager.png" loading="lazy" alt="用例库管理页">
+        <figcaption>用例库：文件夹 + 导图树，选中导图显示元信息与预览</figcaption>
+      </figure>
+
+      <h3 id="case-library">6.1 用例库管理</h3>
+      <table>
+        <tr><th>操作</th><th>方式</th><th>说明</th></tr>
+        <tr><td>新建文件夹</td><td>工具栏 📁 / 空白处右键 / 文件夹右键「新建子文件夹」</td><td>弹窗内输入名称并选择位置（根目录或任意文件夹），最多三层</td></tr>
+        <tr><td>新建导图</td><td>工具栏 📄 / 右键菜单</td><td>弹窗内输入标题并选择位置，创建后自动打开编辑器</td></tr>
+        <tr><td>搜索</td><td>顶部搜索框</td><td>按名称实时过滤文件夹与导图</td></tr>
+        <tr><td>重命名</td><td>右键「重命名」或 <code>F2</code></td><td>文件夹与导图均支持</td></tr>
+        <tr><td>删除</td><td>右键「删除」或 <code>Delete</code></td><td>软删除；删除文件夹时其下导图一并移入回收</td></tr>
+        <tr><td>复制 / 剪切 / 粘贴</td><td><code>Ctrl C</code> / <code>Ctrl X</code> / <code>Ctrl V</code></td><td>支持多选批量操作，导图可在文件夹间移动</td></tr>
+        <tr><td>多选</td><td><code>Ctrl</code> 点选加选、<code>Shift</code> 范围选</td><td>配合右键 / 快捷键批量管理</td></tr>
+        <tr><td>拖拽移动</td><td>直接拖动节点</td><td>文件夹与导图均可拖拽调整层级与顺序</td></tr>
+      </table>
+      <p>选中导图后，右侧展示<strong>负责人、当前版本、创建 / 修改时间</strong>与<strong>只读导图预览</strong>；存在未保存草稿时会有醒目提示。点击「打开编辑器」进入在线编辑。</p>
+
+      <h3 id="case-io">6.2 导入与导出</h3>
+      <ul>
+        <li><strong>导入</strong>：把 <code>.xmind</code> / <code>.md</code> / <code>.json</code> 文件直接拖入右侧面板，或通过工具栏「导入」菜单选择文件；JSON（<code>.smm</code>）格式包含主题与布局配置，可完整还原。</li>
+        <li><strong>导出</strong>：编辑器「导出」菜单支持 PNG 图片、SVG 矢量图、PDF、Markdown、XMind、纯文本、JSON 七种格式。</li>
+      </ul>
+    </section>
+
+    <!-- 7. 编辑器与大纲 -->
+    <section class="card" id="editor">
+      <h2>导图编辑器与层级文本大纲</h2>
+
+      <h3 id="editor-layout">7.1 编辑器布局与工具栏</h3>
+      <p>点击「打开编辑器」进入全屏编辑器，采用三栏布局：<strong>左侧功能面板</strong>（64px 图标栏 + 320px 详情栏）、<strong>中间画布</strong>、<strong>右侧节点详情</strong>；底部状态栏实时显示草稿保存状态与当前版本号。</p>
+      <figure class="shot">
+        <img src="screenshots/case-editor-map.png" loading="lazy" alt="导图编辑器">
+        <figcaption>导图编辑器：节点图标标记优先级，自动保存草稿，手动保存版本</figcaption>
+      </figure>
+      <p>顶部工具栏从左到右：</p>
+      <table>
+        <tr><th>分组</th><th>功能</th></tr>
+        <tr><td>视图切换</td><td>「导图 / 大纲」一键切换（见 7.4），按地图记忆</td></tr>
+        <tr><td>编辑</td><td>撤销、重做、插入同级节点、插入子节点、删除节点</td></tr>
+        <tr><td>节点内容</td><td>图片、图标（优先级等标记）、超链接、备注、标签</td></tr>
+        <tr><td>结构元素</td><td>概要、关联线、外框、公式</td></tr>
+        <tr><td>文件</td><td>保存版本、导入（XMind / Markdown / JSON）、导出（PNG / SVG / PDF / MD / XMind / TXT / JSON）</td></tr>
+      </table>
+      <p>画布支持滚轮缩放与拖拽平移；常用快捷键：<code>Tab</code> 插入子节点、<code>Enter</code> 插入同级节点、<code>Delete</code> 删除节点、<code>Ctrl Z / Ctrl Y</code> 撤销重做。右键节点弹出上下文菜单，可快速完成上述大部分操作。</p>
+      <p>工具栏还提供：<strong>查找替换</strong>（<code>Ctrl F</code>，全图按文本搜索节点，支持逐个定位与批量替换）、<strong>格式刷</strong>（把选中节点的样式一键刷到下一个点击的节点）、<strong>小地图</strong>（右下角缩略图导航，拖动视口框快速移动画布）、<strong>演示模式</strong>（全屏逐节点播放，方向键 / 空格翻页，支持填空模式，适合用例评审）；内容超出画布时自动显示自定义滚动条。</p>
+
+      <h3 id="editor-panels">7.2 左侧功能面板</h3>
+      <ul>
+        <li><strong>节点样式</strong>：字体、字号、颜色、加粗 / 斜体 / 下划线、边框、背景、形状、内边距等节点级样式；</li>
+        <li><strong>基础样式</strong>：整体主题的连线颜色 / 粗细 / 风格、节点间距、圆角等全局样式；</li>
+        <li><strong>主题</strong>：内置多套配色主题一键切换；</li>
+        <li><strong>结构</strong>：逻辑结构图、思维导图、组织结构图、目录组织图、时间轴等多种布局；</li>
+        <li><strong>大纲</strong>：侧栏版可编辑大纲（与 7.4 的全屏大纲同源）；</li>
+        <li><strong>备注 / 图标</strong>：节点备注编辑、图标库选择；</li>
+        <li><strong>版本</strong>：版本快照列表、行级差异查看、一键回滚；</li>
+        <li><strong>设置</strong>：编辑器偏好设置。</li>
+      </ul>
+
+      <h3 id="editor-version">7.3 版本与协作</h3>
+      <ul>
+        <li><strong>草稿自动保存</strong>：编辑停顿约 2 秒自动保存草稿；意外关闭后再次打开会询问是否恢复；</li>
+        <li><strong>版本快照</strong>：「保存版本」手动生成快照（自动记录版本号），版本面板可查看每个版本的完整导图；</li>
+        <li><strong>回滚</strong>：任意历史版本一键回滚，回滚生成新版本、不改写历史；</li>
+        <li><strong>编辑锁</strong>：同一导图同一时间仅一人可编辑（1 分钟超时 + 心跳续期）。他人打开时自动进入只读预览并显示持有人，锁释放后即可接管；</li>
+        <li><strong>只读场景</strong>：无编辑权限、查看历史版本、他人持锁时自动禁用编辑。</li>
+      </ul>
+
+      <h3 id="editor-outline">7.4 层级文本大纲</h3>
+      <p>工具栏右上角「导图 / 大纲」一键切换到<strong>层级文本大纲</strong>视图：以缩进文本呈现整棵导图树，适合快速通读与批量整理用例。</p>
+      <figure class="shot">
+        <img src="screenshots/case-editor-outline.png" loading="lazy" alt="层级文本大纲">
+        <figcaption>层级文本大纲视图：可直接编辑并与导图双向同步</figcaption>
+      </figure>
+      <table>
+        <tr><th>操作</th><th>方式</th><th>说明</th></tr>
+        <tr><td>修改文本</td><td>点击节点文字直接编辑</td><td>失焦自动同步回导图画布</td></tr>
+        <tr><td>插入同级</td><td><code>Enter</code></td><td>在当前节点后插入并进入编辑</td></tr>
+        <tr><td>插入子级 / 升级</td><td><code>Tab</code> / <code>Shift+Tab</code></td><td>层级调整实时同步</td></tr>
+        <tr><td>排序移动</td><td>拖拽节点</td><td>支持拖到目标节点前 / 后 / 内部</td></tr>
+        <tr><td>删除节点</td><td><code>Delete</code> / <code>Backspace</code></td><td>选中后删除（根节点不可删）</td></tr>
+      </table>
+      <p>大纲视图的选择按地图记忆（下次打开恢复上次视图）；只读场景下自动切换为只读展示。所有编辑实时同步画布并走统一的草稿 / 版本链路。</p>
+    </section>
+
+    <!-- 8. 任务管理 -->
+    <section class="card" id="task">
+      <h2>任务管理</h2>
+      <p>任务模块的交互以主流待办应用桌面端为参照，覆盖个人任务管理的完整闭环。左侧栏从上到下：<strong>智能清单</strong>（今天 / 最近 7 天 / 收集箱 / 摘要）、<strong>视图入口</strong>（全部 / 日历 / 统计 / 习惯打卡 / 专注 / 四象限）、<strong>自定义清单</strong>（颜色圆点 + 计数）、<strong>标签</strong>、<strong>过滤器</strong>，以及已完成 / 回收站与全局设置入口。</p>
+
+      <h3 id="task-sidebar">8.1 侧栏与清单管理</h3>
+      <ul>
+        <li><strong>全局搜索</strong>：<code>Ctrl K</code>（Mac <code>Cmd K</code>）唤起搜索面板，支持 <code>#标签</code> 语法按标签过滤；</li>
+        <li><strong>清单管理</strong>：清单右键可重命名 / 改色 / 共享 / 删除；清单可设置颜色与图标，共享给其他用户并指定 viewer / editor 角色；</li>
+        <li><strong>标签</strong>：任务上使用 <code>~标签</code> 即自动创建；侧栏展示标签计数，支持标签层级与颜色；</li>
+        <li><strong>过滤器</strong>：自定义条件（清单 / 标签 / 优先级等组合）保存为过滤器，一键筛选；</li>
+        <li><strong>已完成 / 回收站</strong>：已完成任务聚合展示；删除的任务进回收站，可恢复或彻底删除。</li>
+      </ul>
+
+      <h3 id="task-list-view">8.2 列表视图与详情抽屉</h3>
+      <p>列表视图为扁平任务行（无卡片边框，悬停浅灰底）：行内依次是优先级竖条、勾选框、标题、标签，右侧为所属清单名与日期（逾期红字）；置顶任务独立「已置顶」分组置顶展示。</p>
+      <figure class="shot">
+        <img src="screenshots/task-list.png" loading="lazy" alt="任务清单视图">
+        <figcaption>清单视图：优先级竖条、置顶分组、右侧详情抽屉，底部快速添加条</figcaption>
+      </figure>
+      <p><strong>详情抽屉</strong>（点击任务行滑出）：修改标题、日期与提醒、所属清单、标签；富文本备注支持待办 checkbox 行；可添加子任务、上传附件；底部可将任务设为番茄专注目标。</p>
+      <p><strong>任务右键菜单</strong>提供完整快捷操作：快捷日期（今天 / 明天 / 下周 / 下月 / 清除）、优先级四档、添加子任务、置顶、移动到其他清单、标签增删、负责人、开始专注（番茄计时 / 正计时）、创建副本、复制应用内链接、关联主任务、任务与笔记互转、删除。</p>
+
+      <h3 id="task-quickadd">8.3 快速添加语法</h3>
+      <p>在输入条中可用快捷语法一次性设置属性，回车保存；点击右侧 <code>⌄</code> 可展开完整设置（优先级 / 清单 / 标签 / 从模板添加 / 完整输入框），<code>Shift+Enter</code> 展开描述：</p>
+      <table>
+        <tr><th>语法</th><th>示例</th><th>说明</th></tr>
+        <tr><td><code>#清单</code></td><td><code>#产品研发</code></td><td>指定所属清单（未命中自动新建）</td></tr>
+        <tr><td><code>!优先级</code></td><td><code>!高</code> 或 <code>!3</code></td><td>高 / 中 / 低优先级</td></tr>
+        <tr><td><code>@日期</code></td><td><code>@明天</code> <code>@下周三</code> <code>@10-30</code></td><td>截止日期，可叠加时间如 <code>@明天 18:00</code></td></tr>
+        <tr><td><code>~标签</code></td><td><code>~缺陷</code></td><td>添加标签，可多个</td></tr>
+      </table>
+      <p>在「今天 / 明天」智能清单中快速添加会自动带上对应日期；「添加任务至“今天”」等占位文案实时提示落点。</p>
+
+      <h3 id="task-sort">8.4 排序与分组</h3>
+      <p>标题行右侧 <code>⇅</code> 菜单控制当前清单的排序与分组（按清单记忆）：</p>
+      <ul>
+        <li><strong>排序</strong>：默认（手动顺序）/ 时间 / 优先级 / 标题 / 创建时间，可选升序降序；</li>
+        <li><strong>分组</strong>：自定义分组 / 清单 / 时间 / 创建时间 / 标签 / 优先级 / 无；</li>
+        <li>标题行 <code>⋯</code> 菜单还提供：隐藏已完成、显示详细（行内描述预览）、显示检查事项（子任务默认展开）、打印当前清单。</li>
+      </ul>
+
+      <h3 id="task-board">8.5 看板视图</h3>
+      <p>看板把任务组织为多列：清单视图按<strong>自定义分组</strong>分列（未分组列按已置顶 / 未置顶分区），智能清单则按当前分组维度（时间 / 优先级 / 清单 / 标签）分列。</p>
+      <figure class="shot">
+        <img src="screenshots/task-board.png" loading="lazy" alt="任务看板视图">
+        <figcaption>看板视图：未分组列按置顶状态分区，尾部内联「添加分组」</figcaption>
+      </figure>
+      <ul>
+        <li><strong>列头操作</strong>：悬停出现 <code>+</code>（在列顶插入任务）与 <code>⋯</code> 菜单（重命名 / 在上方或下方添加分组 / 移动到其他清单 / 删除）；列头右键同样弹出菜单；</li>
+        <li><strong>添加分组</strong>：看板尾部内联输入框，回车即建，聚焦时显示新分组落位预览；</li>
+        <li><strong>拖拽语义</strong>：跨列拖拽 = 智能修改属性（自定义分组列改分组、时间列改期、优先级列改优先级、清单列移动清单）；未分组列内置顶 / 未置顶分区拖拽即置顶 / 取消置顶；列内拖拽 = 手动排序；</li>
+        <li><strong>列内添加</strong>：点击列头 <code>+</code> 在列顶展开输入框，或使用列底「+ 添加任务」。</li>
+      </ul>
+
+      <h3 id="task-calendar">8.6 日历与时间线</h3>
+      <ul>
+        <li><strong>日历</strong>：月 / 周 / 日 / 日程 / 多日 / 多周 / 年七种视图；卡片按清单着色，拖拽改期、拖到时间轴精确排时段；</li>
+        <li><strong>时间线</strong>：甘特式条状视图，按日期铺开任务，适合查看任务跨度与依赖。</li>
+      </ul>
+
+      <h3 id="task-quadrant">8.7 四象限</h3>
+      <p>紧急 / 重要 2×2 矩阵整页展示：象限规则（参与哪些清单、紧急判定天数）可配置并存本地；卡片支持时间 / 清单 / 优先级分组与排序，跨象限拖拽即改属性，象限头部悬停出 <code>+</code> / <code>⋯</code> 新增与设置。</p>
+
+      <h3 id="task-summary">8.8 统计与摘要</h3>
+      <ul>
+        <li><strong>统计</strong>：今日待办、逾期、已完成总量，清单 / 智能清单分布等报表；</li>
+        <li><strong>摘要</strong>：按维度汇总的任务概览页。</li>
+      </ul>
+
+      <h3 id="task-focus">8.9 番茄专注与习惯打卡</h3>
+      <ul>
+        <li><strong>番茄专注</strong>：番茄计时（可配置时长）与正计时两种模式，支持沉浸模式与 Mini 悬浮条；选定任务开始专注，结束后记录专注会话；</li>
+        <li><strong>专注统计</strong>：按日 / 清单聚合的专注时长报表；</li>
+        <li><strong>习惯打卡</strong>：每日习惯列表，打卡 / 跳过 / 补记，展示当日进度（如 2/3）；任务模块侧栏直达。</li>
+      </ul>
+
+      <h3 id="task-batch">8.10 批量操作与回收站</h3>
+      <p>点击「多选」或按住 <code>Ctrl</code> / <code>Shift</code> 点选任务进入批量模式，右侧详情栏原位变为批量面板：</p>
+      <ul>
+        <li><strong>属性批量编辑</strong>：日期与提醒、推迟（明天 / 下周 / 下月，按各自日期整体平移）、优先级、移动到清单、批量加标签；</li>
+        <li><strong>批量动作</strong>：完成、置顶、关联主任务（选中项转为某任务子任务）、创建副本、合并（多任务并为一个新任务的子任务）、打开便签、复制文本（按顺序复制标题）、删除；</li>
+        <li><strong>回收站</strong>：已删除任务可恢复或彻底删除。</li>
+      </ul>
+    </section>
+
+    <!-- 9. 知识库 -->
+    <section class="card" id="wiki">
+      <h2>知识库 Wiki</h2>
+      <p>Wiki 是基于 Git 的在线 Obsidian：每个文档库（Vault）对应一个 Git 仓库，文档即 Markdown 文件，天然拥有完整历史。支持创建空库、远程克隆、上传 zip 或导入服务器目录。</p>
+      <figure class="shot">
+        <img src="screenshots/wiki-manager.png" loading="lazy" alt="知识库管理页">
+        <figcaption>知识库列表：卡片展示文档数与最近更新，支持导入 / 新建 / 设置</figcaption>
+      </figure>
+      <p>进入工作区后：左侧文档树（新建 / 移动 / 删除 / 过滤），中部 Vditor 所见即所得编辑（输入防抖自动保存，<code>Ctrl S</code> 保存），右侧大纲 / 反链 / 标签面板。</p>
+      <figure class="shot">
+        <img src="screenshots/wiki-workspace.png" loading="lazy" alt="Wiki 工作区">
+        <figcaption>Wiki 工作区：文档树 + 多标签编辑 + 大纲面板，顶部提交 / 历史 / 图谱</figcaption>
+      </figure>
+      <ul>
+        <li><strong>双链</strong>：<code>[[</code> 触发补全弹层；点击 <code>[[文档]]</code> 直接跳转，目标不存在时询问创建；</li>
+        <li><strong>关系图谱</strong>：ECharts 力导图展示文档间引用关系，按标签着色；</li>
+        <li><strong>版本</strong>：手动提交（带提交说明）或定时自动提交，提交历史支持行级 diff 与回滚；</li>
+        <li><strong>附件</strong>：直接粘贴图片上传，存入仓库 <code>attachments/</code> 并随文档提交；</li>
+        <li><strong>同步</strong>：支持 pull / push 远程 Git 仓库，冲突以 409 返回并提示文件清单；</li>
+        <li><strong>协作锁</strong>：窗口级编辑锁，他人持锁时自动切只读，锁释放后可一键接管。</li>
+      </ul>
+    </section>
+
+    <!-- 10. 后台管理与权限 -->
+    <section class="card" id="admin">
+      <h2>后台管理与权限</h2>
+      <p>「后台管理」（需 <code>sys:manage</code> 权限）提供用户、角色、权限三员管理：新建用户、分配角色、编辑权限、禁用与删除。</p>
+      <figure class="shot">
+        <img src="screenshots/admin.png" loading="lazy" alt="后台管理">
+        <figcaption>平台后台：用户 / 角色 / 权限管理</figcaption>
+      </figure>
+      <p>系统采用 <strong>RBAC + ACL</strong>：角色批量授予，亦可用 ACL 对单个用户微调。各模块权限点如下（前端按权限渲染操作入口，后端逐一校验）：</p>
+      <table>
+        <tr><th>模块</th><th>权限点</th></tr>
+        <tr><td>用例管理</td><td><code>xmind:view</code> 查看、<code>xmind:edit</code> 编辑、<code>xmind:delete</code> 删除、<code>xmind:manage</code> 管理文件夹</td></tr>
+        <tr><td>任务管理</td><td><code>task:view</code>、<code>task:create</code>、<code>task:edit</code>、<code>task:delete</code>、<code>task:share</code> 共享、<code>task:run</code> 专注</td></tr>
+        <tr><td>知识库</td><td><code>wiki:view</code>、<code>wiki:edit</code>、<code>wiki:delete</code>、<code>wiki:manage</code> 管理库</td></tr>
+        <tr><td>平台管理</td><td><code>sys:manage</code></td></tr>
+      </table>
+      <p>此外，用例导图与任务清单支持<strong>清单级共享</strong>：把清单共享给其他用户并指定 viewer / editor 角色。</p>
+    </section>
+
+    <!-- 11. 目录结构 -->
+    <section class="card" id="structure">
+      <h2>目录结构</h2>
+      <pre class="tree">studiosystem/
+├── backend/                  <span class="c"># FastAPI 后端</span>
+│   ├── app/
+│   │   ├── api/v1/endpoints/ <span class="c"># 路由（case / task / wiki / platform …）</span>
+│   │   ├── models/           <span class="c"># Beanie 文档模型</span>
+│   │   ├── schemas/          <span class="c"># Pydantic 入参 / 出参</span>
+│   │   ├── services/         <span class="c"># 业务逻辑</span>
+│   │   └── core/             <span class="c"># 配置、鉴权、异常</span>
+│   ├── deploy/               <span class="c"># K8s 清单</span>
+│   ├── tests/                <span class="c"># pytest 测试</span>
+│   ├── start.bat             <span class="c"># Windows 一键启动</span>
+│   └── pyproject.toml
+├── frontend/                 <span class="c"># Vue 3 前端</span>
+│   ├── src/
+│   │   ├── views/case/       <span class="c"># 用例管理 + 导图编辑器</span>
+│   │   ├── views/task/       <span class="c"># 任务管理（列表/看板/日历/四象限…）</span>
+│   │   ├── views/wiki/       <span class="c"># 知识库</span>
+│   │   ├── stores/           <span class="c"># Pinia 状态</span>
+│   │   └── router/
+│   ├── Dockerfile
+│   └── nginx.conf
+└── docs/                     <span class="c"># 本文档</span></pre>
+    </section>
+
+    <!-- 12. FAQ -->
+    <section class="card" id="faq">
+      <h2>常见问题</h2>
+      <h3>Q1：<code>npm ci</code> 报错找不到 simple-mind-map？</h3>
+      <p>前端依赖了仓库同级的本地目录 <code>../../mind-map/simple-mind-map</code>。请按「快速开始」中的目录结构放置该目录，或将依赖改为 npm 版本。</p>
+      <h3>Q2：后端启动失败，提示连接数据库失败？</h3>
+      <p>确认 MongoDB 已启动且 <code>MONGODB_URI</code> 指向正确地址；首次启动会自动建库建集合，无需手动导入。</p>
+      <h3>Q3：打开导图提示「被 xx 锁定」？</h3>
+      <p>编辑锁机制：同一导图同一时间仅一人可编辑，锁 1 分钟超时自动释放。等待对方退出或锁超时即可；历史版本预览不受影响。</p>
+      <h3>Q4：导图图片 / 附件上传失败？</h3>
+      <p>图片与附件默认使用内置的<strong>本地磁盘存储</strong>（<code>STORAGE_DIR</code> 目录，经 <code>/uploads</code> 访问），无需部署任何外部服务。生产环境请把该目录挂载到持久化卷；若希望继续使用自建文件服务，设 <code>STORAGE_BACKEND=resourceplatform</code> 并配置对应地址与令牌。注意 K8s 部署时需在 Ingress / nginx 中把 <code>/uploads</code> 一并转发到后端。</p>
+      <h3>Q5：忘记 admin 密码？</h3>
+      <p>删除数据库中的用户集合后重启服务会以 <code>ADMIN_INITIAL_PASSWORD</code>（缺省 admin123）重新初始化 admin；或由其他管理员在后台重置。</p>
+      <h3>Q6：端口被占用？</h3>
+      <p>默认端口：前端开发 5173、后端开发 8302、后端容器 8000、MongoDB 27017。可在启动命令与 <code>.env</code> / Vite 代理中调整，保持前后端代理一致即可。</p>
+    </section>
+
+    <!-- 13. 开源说明 -->
+    <section class="card" id="opensource">
+      <h2>开源说明</h2>
+      <ul>
+        <li>正式开源前请完成：更换 <code>SECRET_KEY</code> 与默认管理员密码、清理演示数据、确认 <code>.env</code> / 密钥文件不进入版本库（仓库已含 <code>.gitignore</code> 与 <code>secret.yaml.example</code> 模板）；</li>
+        <li>本仓库依赖的 <code>simple-mind-map</code> 为本地 fork（含功能定制），开源时请一并发布该目录或改用 npm 版本并回归测试；</li>
+        <li>许可证：请根据开源策略选择（推荐 MIT / Apache-2.0），并在仓库根目录放置 LICENSE 文件后更新本节。</li>
+      </ul>
+      <p>如果这个项目对你有帮助，欢迎 Star ⭐ 与 PR。</p>
+    </section>
+
+    <footer>Studio System · 使用文档 · 由项目工具生成于 2026-10</footer>
+  </main>
+</div>
+
+<button id="backTop" title="回到顶部">↑</button>
+
+<script>
+  // 目录高亮：滚动时取「参考线以上最近的区块」，确定性强且天然支持子目录
+  const links = [...document.querySelectorAll('nav.toc a')];
+  const targets = links
+    .map((a) => ({ link: a, el: document.querySelector(a.getAttribute('href')) }))
+    .filter((t) => t.el);
+  const REF_LINE = 140;
+
+  function updateActive() {
+    let cur = targets[0];
+    for (const t of targets) {
+      if (t.el.getBoundingClientRect().top <= REF_LINE) cur = t;
+      else break;
+    }
+    // 滚到底部时高亮最后一项
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+      cur = targets[targets.length - 1];
+    }
+    links.forEach((a) => a.classList.toggle('active', a === cur.link));
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  window.addEventListener('resize', updateActive);
+  updateActive();
+
+  // 点击目录后高亮立即生效（滚动动画期间先行反馈）
+  links.forEach((a) =>
+    a.addEventListener('click', () => {
+      links.forEach((x) => x.classList.remove('active'));
+      a.classList.add('active');
+    })
+  );
+
+  // 回到顶部
+  const btn = document.getElementById('backTop');
+  window.addEventListener('scroll', () => btn.classList.toggle('show', window.scrollY > 600), { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+</body>
+</html>

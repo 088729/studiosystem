@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+htmlcov
+*.egg-info
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Secrets
+deploy/secret.yaml
+.env
+.env.local
+.env.*
+
+# 日志与本地数据
+logs/
+*.log
+backend.log
+server.log
+
+# 测试与文档
+tests/
+Design/
+README.md
+scripts/

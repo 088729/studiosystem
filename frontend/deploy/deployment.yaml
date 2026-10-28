@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studiosystem-frontend
+  namespace: studio
+  labels:
+    app: studiosystem-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: studiosystem-frontend
+  template:
+    metadata:
+      labels:
+        app: studiosystem-frontend
+    spec:
+      containers:
+        - name: studiosystem-frontend
+          image: ghcr.io/your-org/studiosystem-frontend:latest  # 替换为你的镜像仓库
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
