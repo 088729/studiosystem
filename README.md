@@ -42,10 +42,9 @@ uv venv && uv pip install -e ".[dev]"
 copy .env.example .env        # 按需修改数据库地址与密钥
 start.bat                     # 或 uvicorn app.main:app --reload --port 8302
 
-# 前端（Node ≥ 18）：先装一次导图内核的依赖，再装前端依赖
+# 前端（Node ≥ 18）：仓库根目录一键安装（导图内核 + 前端）
 cd frontend
-npm ci --prefix ../packages/simple-mind-map --omit=dev
-npm ci
+npm run setup
 npm run dev                   # http://localhost:5173
 ```
 
