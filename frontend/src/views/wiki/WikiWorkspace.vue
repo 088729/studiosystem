@@ -22,18 +22,29 @@
         <el-tooltip content="搜索 (Ctrl+K)" placement="bottom">
           <el-icon class="topbar-icon" @click="searchVisible = true"><Search /></el-icon>
         </el-tooltip>
-        <el-button v-auth="'wiki:edit'" size="small" :disabled="!activeTab || isReadonly" @click="openCommit">
-          提交
-        </el-button>
-        <el-button v-auth="'wiki:view'" size="small" :disabled="!activeTab" @click="historyVisible = true">
-          历史
-        </el-button>
-        <el-button v-auth="'wiki:view'" size="small" @click="openGraph">
-          图谱
-        </el-button>
-        <el-button v-auth="'wiki:manage'" size="small" text @click="rebuildIndex">
-          重建索引
-        </el-button>
+        <el-tooltip content="提交变更 (Ctrl+S)" placement="bottom">
+          <el-button v-auth="'wiki:edit'" circle size="small" :disabled="!activeTab || isReadonly" @click="openCommit">
+            <el-icon><UploadFilled /></el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="提交历史" placement="bottom">
+          <el-button v-auth="'wiki:view'" circle size="small" :disabled="!activeTab" @click="historyVisible = true">
+            <el-icon><Clock /></el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-tooltip content="关系图谱" placement="bottom">
+          <el-button v-auth="'wiki:view'" circle size="small" @click="openGraph">
+            <el-icon><Share /></el-icon>
+          </el-button>
+        </el-tooltip>
+        <el-dropdown v-auth="'wiki:manage'" trigger="click" @command="(cmd) => cmd === 'rebuild' && rebuildIndex()">
+          <el-icon class="topbar-icon more-actions"><MoreFilled /></el-icon>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="rebuild">重建搜索索引</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </header>
 
@@ -138,8 +149,8 @@
     </div>
 
     <!-- 新建文档 -->
-    <el-dialog v-model="createVisible" :title="createMode === 'folder' ? '新建目录' : '新建文档'" width="460px">
-      <el-form label-width="80px">
+    <el-dialog v-model="createVisible" :title="createMode === 'folder' ? '新建目录' : '新建文档'" width="460px" align-center :show-close="false" class="wiki-dialog">
+      <el-form label-position="top">
         <el-form-item label="所在目录">
           <el-input :model-value="createBase || '（根目录）'" disabled />
         </el-form-item>
@@ -148,14 +159,16 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="createVisible = false">取消</el-button>
-        <el-button type="primary" :loading="opLoading" @click="submitCreate">创建</el-button>
+        <div class="dialog-footer">
+          <el-button @click="createVisible = false">取消</el-button>
+          <el-button type="primary" :loading="opLoading" @click="submitCreate">创建</el-button>
+        </div>
       </template>
     </el-dialog>
 
     <!-- 重命名 / 移动 -->
-    <el-dialog v-model="renameVisible" title="重命名 / 移动" width="460px">
-      <el-form label-width="80px">
+    <el-dialog v-model="renameVisible" title="重命名 / 移动" width="460px" align-center :show-close="false" class="wiki-dialog">
+      <el-form label-position="top">
         <el-form-item label="当前路径">
           <el-input :model-value="renameSrc" disabled />
         </el-form-item>
@@ -164,18 +177,22 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="renameVisible = false">取消</el-button>
-        <el-button type="primary" :loading="opLoading" @click="submitRename">确定</el-button>
+        <div class="dialog-footer">
+          <el-button @click="renameVisible = false">取消</el-button>
+          <el-button type="primary" :loading="opLoading" @click="submitRename">确定</el-button>
+        </div>
       </template>
     </el-dialog>
 
     <!-- 提交 -->
-    <el-dialog v-model="commitVisible" title="提交变更" width="460px">
+    <el-dialog v-model="commitVisible" title="提交变更" width="460px" align-center :show-close="false" class="wiki-dialog">
       <p class="commit-tip">将提交该库当前所有未提交的变更（{{ uncommittedCount }} 项）。</p>
       <el-input v-model="commitMessage" type="textarea" :rows="3" placeholder="提交说明（可选），如：补充接口设计" />
       <template #footer>
-        <el-button @click="commitVisible = false">取消</el-button>
-        <el-button type="primary" :loading="opLoading" @click="submitCommit">提交</el-button>
+        <div class="dialog-footer">
+          <el-button @click="commitVisible = false">取消</el-button>
+          <el-button type="primary" :loading="opLoading" @click="submitCommit">提交</el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -230,6 +247,7 @@ import WikiSidebar from './components/WikiSidebar.vue'
 import WikiEditor from './components/WikiEditor.vue'
 import HistoryDrawer from './components/HistoryDrawer.vue'
 import { useWikiLock } from './composables/useWikiLock'
+import { UploadFilled, Clock, Share, MoreFilled, Search } from '@element-plus/icons-vue'
 
 const SAVE_DEBOUNCE_MS = 30 * 1000
 
@@ -837,11 +855,34 @@ function startResize(e) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
-  padding: 0 12px;
+  height: 52px;
+  padding: 0 16px;
   background: #fff;
   border-bottom: 1px solid var(--ss-border);
   flex-shrink: 0;
+}
+.ws-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.save-status {
+  font-size: 12px;
+  color: var(--ss-text-muted, #9ca3af);
+  white-space: nowrap;
+}
+.save-status.dirty {
+  color: var(--ss-primary, #4f6ef7);
+}
+.more-actions {
+  cursor: pointer;
+  color: var(--ss-text-secondary, #6b7280);
+  padding: 4px;
+  border-radius: 6px;
+}
+.more-actions:hover {
+  color: var(--ss-primary, #4f6ef7);
+  background: var(--ss-primary-light, #eef1fe);
 }
 .ws-topbar-left {
   display: flex;
@@ -925,15 +966,6 @@ function startResize(e) {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-}
-.ws-statusbar {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 12px;
-  font-size: 12px;
-  color: var(--ss-text-muted);
-  border-top: 1px solid var(--ss-border);
-  flex-shrink: 0;
 }
 .ws-right {
   width: 240px;
@@ -1034,4 +1066,77 @@ function startResize(e) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ===== 滴答风弹窗（与管理页/用例库一致） ===== */
+.wiki-dialog :deep(.el-dialog) {
+  border-radius: 16px;
+  padding: 28px 30px;
+}
+.wiki-dialog :deep(.el-dialog__header) {
+  padding: 0 0 22px;
+}
+.wiki-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+}
+.wiki-dialog :deep(.el-dialog__body) {
+  padding: 0;
+}
+.wiki-dialog :deep(.el-dialog__footer) {
+  padding: 26px 0 0;
+}
+.wiki-dialog :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: var(--ss-text);
+}
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.dialog-footer .el-button {
+  min-width: 108px;
+  height: 40px;
+  border-radius: 8px;
+  margin: 0;
+}
+.commit-tip {
+  font-size: 13px;
+  color: var(--ss-text-secondary);
+  margin-bottom: 12px;
+  background: var(--ss-primary-light, #eef1fe);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+/* ===== 文档标签页精修 ===== */
+.ws-tabs :deep(.el-tabs__item) {
+  height: 34px;
+  font-size: 13px;
+  border: none !important;
+  background: transparent;
+}
+.ws-tabs :deep(.el-tabs__item.is-active) {
+  background: var(--ss-primary-light, #eef1fe);
+  border-radius: 8px 8px 0 0;
+  color: var(--ss-primary, #4f6ef7);
+  font-weight: 600;
+}
+
+/* ===== 状态栏精修 ===== */
+.ws-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  height: 28px;
+  font-size: 11.5px;
+  color: var(--ss-text-muted, #9ca3af);
+  background: #fafbfd;
+  border-top: 1px solid var(--ss-border, #e6e9f0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 </style>
