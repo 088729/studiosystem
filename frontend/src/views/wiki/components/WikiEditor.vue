@@ -454,6 +454,49 @@ defineExpose({ ...api, switchReadonly })
 .wiki-editor.is-readonly :deep(.vditor-toolbar) {
   display: none;
 }
+/* ===== Vditor chrome 融入工作区：去边框、工具栏成条、正文限宽居中 ===== */
+.wiki-editor :deep(.vditor) {
+  border: none;
+  border-radius: 0;
+}
+/* 工具栏：与标签栏连成一体的细条 */
+.wiki-editor :deep(.vditor-toolbar) {
+  padding: 0 16px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--ss-border, #e6e9f0);
+  background: #fafbfd;
+  line-height: 34px;
+}
+.wiki-editor :deep(.vditor-toolbar__item) {
+  padding: 0 5px;
+}
+.wiki-editor :deep(.vditor-toolbar__item .vditor-icon) {
+  width: 16px;
+  height: 16px;
+}
+/* 字数统计融入工具栏，去掉默认灰底块 */
+.wiki-editor :deep(.vditor-counter) {
+  background: transparent;
+  color: var(--ss-text-muted, #9ca3af);
+  padding: 0 12px 0 0;
+  line-height: 34px;
+  font-size: 12px;
+}
+/* 正文：限宽居中，阅读尺度 */
+.wiki-editor :deep(.vditor-content) {
+  background: #fff;
+}
+.wiki-editor :deep(.vditor-ir .vditor-reset),
+.wiki-editor :deep(.vditor-preview .vditor-reset) {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 26px 44px 140px;
+  font-size: 14.5px;
+}
+.wiki-editor :deep(.vditor-ir .vditor-reset h1) {
+  font-size: 26px;
+}
+
 .link-hint {
   position: absolute;
   z-index: 2000;

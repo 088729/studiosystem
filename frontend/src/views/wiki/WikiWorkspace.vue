@@ -951,7 +951,12 @@ function startResize(e) {
 }
 .ws-tabs {
   flex-shrink: 0;
-  padding: 6px 8px 0;
+  padding: 5px 8px 0;
+  background: #fafbfd;
+  border-bottom: 1px solid var(--ss-border, #e6e9f0);
+}
+.ws-tabs :deep(.el-tabs__nav-wrap)::after {
+  display: none;
 }
 .ws-tabs :deep(.el-tabs__header) {
   margin-bottom: 0;
