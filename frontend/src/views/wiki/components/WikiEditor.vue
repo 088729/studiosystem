@@ -473,6 +473,11 @@ defineExpose({ ...api, switchReadonly })
 .wiki-editor :deep(.vditor-toolbar__item .vditor-icon) {
   width: 16px;
   height: 16px;
+  border-radius: 4px;
+}
+.wiki-editor :deep(.vditor-toolbar__item .vditor-icon:hover) {
+  color: var(--ss-primary, #4f6ef7);
+  background: var(--ss-primary-light, #eef1fe);
 }
 /* 字数统计融入工具栏，去掉默认灰底块 */
 .wiki-editor :deep(.vditor-counter) {

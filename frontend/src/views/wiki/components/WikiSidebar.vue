@@ -138,7 +138,10 @@ function emitCreateFolder(folder) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 12px;
+  background: #fafbfd;
   border-bottom: 1px solid var(--ss-border);
 }
 .toolbar-title {
@@ -169,7 +172,22 @@ function emitCreateFolder(folder) {
 .ws-tree {
   flex: 1;
   overflow-y: auto;
-  padding: 0 6px 12px;
+  padding: 6px 6px 12px;
+}
+.ws-tree :deep(.el-tree-node__content) {
+  height: 28px;
+  border-radius: 6px;
+  margin-bottom: 1px;
+}
+.ws-tree :deep(.el-tree-node__content:hover) {
+  background: var(--ss-bg, #f5f7fa);
+}
+.ws-tree :deep(.el-tree-node.is-current > .el-tree-node__content) {
+  background: var(--ss-primary-light, #eef1fe);
+  color: var(--ss-primary, #4f6ef7);
+}
+.ws-tree :deep(.el-tree-node.is-current > .el-tree-node__content .node-label) {
+  font-weight: 500;
 }
 .node-icon {
   margin-right: 5px;

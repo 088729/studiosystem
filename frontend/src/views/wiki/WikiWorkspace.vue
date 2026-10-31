@@ -1144,4 +1144,37 @@ function startResize(e) {
   white-space: nowrap;
 }
 
+/* ===== 右侧面板精修：顶条与中栏标签区同高同色 ===== */
+.ws-right-tabs :deep(.el-tabs__header) {
+  margin: 0;
+  padding: 5px 10px 0;
+  background: #fafbfd;
+  border-bottom: 1px solid var(--ss-border, #e6e9f0);
+}
+.ws-right-tabs :deep(.el-tabs__nav-wrap)::after {
+  display: none;
+}
+.ws-right-tabs :deep(.el-tabs__item) {
+  height: 34px;
+  font-size: 13px;
+  color: var(--ss-text-secondary, #6b7280);
+  padding: 0 10px;
+}
+.ws-right-tabs :deep(.el-tabs__item.is-active) {
+  color: var(--ss-primary, #4f6ef7);
+  font-weight: 600;
+}
+.ws-right-tabs :deep(.el-tabs__active-bar) {
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+/* 面板内容滚动条细化 */
+.ws-right-tabs :deep(.el-tabs__content)::-webkit-scrollbar {
+  width: 6px;
+}
+.ws-right-tabs :deep(.el-tabs__content)::-webkit-scrollbar-thumb {
+  background: #dfe3ec;
+  border-radius: 3px;
+}
+
 </style>
