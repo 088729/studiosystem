@@ -247,8 +247,9 @@
     <a href="#wiki">9. 知识库 Wiki</a>
     <a href="#admin">10. 后台管理与权限</a>
     <a href="#structure">11. 目录结构</a>
-    <a href="#faq">12. 常见问题</a>
-    <a href="#opensource">13. 开源说明</a>
+    <a href="#mcp">12. MCP 接入（AI 助手）</a>
+    <a href="#faq">13. 常见问题</a>
+    <a href="#opensource">14. 开源说明</a>
   </nav>
 
   <!-- ================= 主内容 ================= -->
@@ -690,7 +691,53 @@ RESOURCEPLATFORM_TOKEN=你的令牌</pre>
 └── docs/                     <span class="c"># 本文档</span></pre>
     </section>
 
-    <!-- 12. FAQ -->
+    <!-- 12. MCP 接入 -->
+    <section class="card" id="mcp">
+      <h2>MCP 接入（AI 助手）</h2>
+      <p>Studio System 提供 <strong>MCP Server</strong>（Model Context Protocol 适配层），让 AI 助手（Claude Desktop、Cherry Studio、Cursor 等支持 MCP 的客户端）用自然语言直接操作<strong>用例导图、任务、知识库 Wiki</strong>。MCP Server 位于工作区 <code>mcp-server/</code> 目录（与 <code>backend/</code>、<code>frontend/</code> 平级），是<strong>独立 git 仓库</strong>（开发主仓在本地 GitLab），随开源发布一起导出到 <a href="https://github.com/088729/studiosystem/tree/main/mcp-server">GitHub 主仓库的 <code>mcp-server/</code> 目录</a>（MIT，从 git 安装）。它不改动后端 / 前端任何代码，只通过现有 REST API 工作。</p>
+
+      <h3>12.1 它能做什么</h3>
+      <ul>
+        <li><strong>用例导图</strong>：读为紧凑文本大纲（模型不接触原始 JSON），节点级增删改（add/update/delete/move patch），整树保存带版本 CAS 与编辑锁闭环；</li>
+        <li><strong>任务</strong>：快速添加语法（<code>@明天 !高 ~回归 #清单</code>）、批量操作、评论、日历区间、提醒确认；</li>
+        <li><strong>知识库</strong>：检索 / 反链 / 图谱、安全写页（先读后写 + diff 预览 + 显式 commit）、版本历史与回滚；</li>
+        <li><strong>组合工作流</strong>：一键把任务摘要生成周报 Wiki 页、把用例导图导出为规格文档、把导图叶子批量转为任务；</li>
+        <li><strong>管理（默认关闭）</strong>：用户 / 角色 / 权限键管理，三重门控按需开启。</li>
+      </ul>
+
+      <h3>12.2 快速接入（stdio）</h3>
+      <p>在支持 MCP 的客户端中添加如下配置（从 <a href="https://github.com/088729/studiosystem">GitHub 主仓库</a>安装，<code>#subdirectory=mcp-server</code> 指向本目录，需本机有 <code>uv</code>；本地开发可改为 <code>python -m studiosystem_mcp</code> 并指定 <code>cwd</code> 为 <code>mcp-server/</code>）：</p>
+      <pre><span class="c"># 客户端 MCP 配置（JSON）</span>
+{
+  <span class="k">"mcpServers"</span>: {
+    <span class="k">"studiosystem"</span>: {
+      <span class="k">"command"</span>: <span class="k">"uvx"</span>,
+      <span class="k">"args"</span>: [
+        <span class="k">"--from"</span>, <span class="k">"git+https://github.com/088729/studiosystem@main#subdirectory=mcp-server"</span>,
+        <span class="k">"studiosystem-mcp"</span>
+      ],
+      <span class="k">"env"</span>: {
+        <span class="k">"STUDIO_BASE_URL"</span>: <span class="k">"http://127.0.0.1:8302"</span>,
+        <span class="k">"STUDIO_MCP_AUTH_MODE"</span>: <span class="k">"password"</span>,
+        <span class="k">"STUDIO_MCP_USERNAME"</span>: <span class="k">"mcp-bot"</span>,
+        <span class="k">"STUDIO_MCP_PASSWORD"</span>: <span class="k">"&lt;专用账号密码&gt;"</span>
+      }
+    }
+  }
+}</pre>
+      <p>后端需为 <code>mcp-bot</code> 授予所需权限键（按启用的能力域：<code>xmind:*</code> / <code>task:*</code> / <code>wiki:*</code>），权限即时生效无需重启。完整配置项、HTTP 模式、Prompts 与协议版本说明见 <a href="../mcp-server/README.md">mcp-server/README.md</a>。</p>
+
+      <h3>12.3 安全模型（重要）</h3>
+      <ul>
+        <li><strong>专用最小权限账号</strong>：绝不要把 admin 凭据配进 MCP。管理域默认关闭，需 <code>STUDIO_MCP_ALLOW_ADMIN=true</code> 且后端持有 <code>sys:manage</code> 才可用；</li>
+        <li><strong>写操作两阶段确认</strong>：整树覆盖 / 删库级操作先返回 diff 预览 + 一次性确认令牌，确认后才执行；不可逆操作另需 <code>STUDIO_MCP_ALLOW_DESTRUCTIVE=true</code>；</li>
+        <li><strong>只读模式</strong>：<code>STUDIO_MCP_READ_ONLY=true</code> 时写工具根本不注册；</li>
+        <li><strong>审计与限流</strong>：每次调用落 JSONL 审计（凭据字段自动打码）；默认 30 次 / 分钟令牌桶限流，防模型循环调用打爆后端；</li>
+        <li><strong>HTTP 模式</strong>：默认只监听回环地址；对外暴露必须配置外层 Bearer 密钥并置于受信任网络。</li>
+      </ul>
+    </section>
+
+    <!-- 13. FAQ -->
     <section class="card" id="faq">
       <h2>常见问题</h2>
       <h3>Q1：<code>npm ci</code> 报错找不到 simple-mind-map？</h3>
@@ -707,7 +754,7 @@ RESOURCEPLATFORM_TOKEN=你的令牌</pre>
       <p>默认端口：前端开发 5173、后端开发 8302、后端容器 8000、MongoDB 27017。可在启动命令与 <code>.env</code> / Vite 代理中调整，保持前后端代理一致即可。</p>
     </section>
 
-    <!-- 13. 开源说明 -->
+    <!-- 14. 开源说明 -->
     <section class="card" id="opensource">
       <h2>开源说明</h2>
       <ul>

@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "studiosystem-mcp"
+version = "0.3.1"
+description = "MCP server for Studio System: mind maps (use cases), tasks, wiki — a safe REST adapter layer"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Studio System Contributors" }]
+keywords = ["mcp", "model-context-protocol", "mindmap", "todo", "wiki"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+]
+# 锁定 mcp SDK 上界：MCP 规范演进快（2025-11-25 → 2026-07-28 破坏性变更），
+# 升级前必须跑 tests/ 的双协议版本冒烟（§12 风险登记）。
+dependencies = [
+    "mcp>=1.9.4,<2.4.0",
+    "httpx>=0.27,<1.0",
+    "pydantic>=2.7,<3.0",
+    "pydantic-settings>=2.3,<3.0",
+    "jinja2>=3.1,<4.0",
+    "pyyaml>=6.0,<7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+studiosystem-mcp = "studiosystem_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://example.com/studiosystem-mcp"
+Repository = "https://example.com/studiosystem-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/studiosystem_mcp"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]  # long fixture payloads are fine in tests
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]

@@ -1,0 +1,46 @@
+# Layered config example for studiosystem-mcp.
+# Priority: STUDIO_MCP_* env vars > this file (STUDIO_MCP_CONFIG) > built-in defaults.
+# All values are placeholders: localhost / example.com only.
+
+studio:
+  base_url: "http://127.0.0.1:8302"
+
+auth:
+  mode: "password"            # password | bearer | pat
+  username: "mcp-bot"
+  password: "change-me"
+  # token: ""
+  # token_file: ""
+  # pat: ""
+
+transport:
+  mode: "stdio"               # stdio | http
+  host: "127.0.0.1"
+  port: 8303
+  # mcp_token: ""             # outer bearer for HTTP; empty = loopback-only
+
+modules:
+  enabled: ["case", "task", "wiki"]
+  read_only: false
+  # allowed_tools: []
+  # denied_tools: []
+  confirm_mode: "auto"        # auto | token | none
+  allow_destructive: false
+
+protocol:
+  versions: ["2026-07-28", "2025-11-25"]
+  tool_ttl_ms: 60000
+
+behavior:
+  case_source: "published"    # published | draft
+  # default_vault_id: ""
+  default_wiki_path: "reports/{date}.md"
+  # templates_dir: ""
+  timeout_seconds: 15
+  retry: 2
+  tz_offset_minutes: 480
+  max_result_items: 20
+
+logging:
+  level: "INFO"
+  # audit_file: ""
