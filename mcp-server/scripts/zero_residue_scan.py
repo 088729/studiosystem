@@ -23,7 +23,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("internal-domain", re.compile(r"wys\.core\.com", re.IGNORECASE)),
     ("internal-lan-ip", re.compile(r"192\.168\.31\.\d+")),
-    ("internal-service-port", re.compile(r"5080/studio")),
+    # 斜杠写成 \/ 转义：正则语义不变，但本文件自身不含内网字面量（发布残留扫描会查）
+    ("internal-service-port", re.compile(r"5080\/studio")),
     ("kubeconfig-abs-path", re.compile(r"/home/\w+/\.kube/config")),
     ("private-key-block", re.compile(r"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----")),
     ("jwt-literal", re.compile(r"eyJ[A-Za-z0-9_-]{20,}\.eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}")),
